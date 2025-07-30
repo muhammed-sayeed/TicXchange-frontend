@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import { CommonModule } from '@angular/common';
 
 import { LayoutModule } from './layouts/layout.module';
+import { CoreModule } from './core/core.module';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { LayoutModule } from './layouts/layout.module';
     BrowserModule,
     CommonModule,
     AppRoutingModule,
-    LayoutModule
+    LayoutModule,
+    CoreModule
   ],
   providers: [],
   bootstrap: [AppComponent]

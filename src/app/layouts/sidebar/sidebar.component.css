@@ -20,20 +20,6 @@
   flex-direction: column;
 }
 
-.sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid #34495e;
-  background-color: #34495e;
-}
-
-.sidebar-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  opacity: 0;
-  animation: fadeIn 0.3s ease 0.2s forwards;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
