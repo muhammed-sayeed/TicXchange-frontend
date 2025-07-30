@@ -1,0 +1,465 @@
+<div class="settings-container">
+  <!-- Header -->
+  <div class="settings-header">
+    <div class="header-content">
+      <h1 class="page-title">⚙️ Settings</h1>
+      <p class="page-subtitle">Customize your experience and manage your preferences</p>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="resetSettings()">
+        🔄 Reset to Default
+      </button>
+      <button class="btn btn-primary" (click)="saveSettings()" [disabled]="isLoading || !hasUnsavedChanges">
+        <span *ngIf="isLoading">💾 Saving...</span>
+        <span *ngIf="!isLoading">💾 Save Changes</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Save Message -->
+  <div class="save-message" *ngIf="saveMessage" [class.success]="saveMessage.includes('success')" [class.error]="saveMessage.includes('Error')">
+    {{ saveMessage }}
+  </div>
+
+  <!-- Main Content -->
+  <div class="settings-content">
+    <!-- Sidebar Navigation -->
+    <div class="settings-sidebar">
+      <nav class="settings-nav">
+        <button 
+          *ngFor="let tab of tabs" 
+          class="nav-item" 
+          [class.active]="activeTab === tab.id"
+          (click)="setActiveTab(tab.id)">
+          <span class="nav-icon">{{ tab.icon }}</span>
+          <span class="nav-label">{{ tab.label }}</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Settings Panels -->
+    <div class="settings-main">
+      
+      <!-- General Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'general'">
+        <div class="panel-header">
+          <h2>🌍 General Settings</h2>
+          <p>Basic application preferences and regional settings</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Appearance</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Theme</label>
+              <span class="setting-description">Choose your preferred color scheme</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.theme" (change)="onSettingChange()">
+              <option value="light">☀️ Light</option>
+              <option value="dark">🌙 Dark</option>
+              <option value="auto">🔄 Auto (System)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Language</label>
+              <span class="setting-description">Select your preferred language</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.language" (change)="onSettingChange()">
+              <option *ngFor="let lang of languages" [value]="lang.code">
+                {{ lang.flag }} {{ lang.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Regional</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Timezone</label>
+              <span class="setting-description">Your local timezone for date and time display</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.timezone" (change)="onSettingChange()">
+              <option *ngFor="let tz of timezones" [value]="tz.value">
+                {{ tz.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Date Format</label>
+              <span class="setting-description">How dates should be displayed</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.dateFormat" (change)="onSettingChange()">
+              <option value="MM/dd/yyyy">MM/DD/YYYY (US)</option>
+              <option value="dd/MM/yyyy">DD/MM/YYYY (EU)</option>
+              <option value="yyyy-MM-dd">YYYY-MM-DD (ISO)</option>
+              <option value="dd MMM yyyy">DD MMM YYYY</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'notifications'">
+        <div class="panel-header">
+          <h2>🔔 Notification Settings</h2>
+          <p>Control how and when you receive notifications</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>General Notifications</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Email Notifications</label>
+              <span class="setting-description">Receive notifications via email</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.emailNotifications" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Push Notifications</label>
+              <span class="setting-description">Receive push notifications on mobile devices</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.pushNotifications" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Desktop Notifications</label>
+              <span class="setting-description">Show notifications on your desktop</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.desktopNotifications" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Sound Effects</label>
+              <span class="setting-description">Play sounds for notifications</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.soundEnabled" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Notification Types</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Messages</label>
+              <span class="setting-description">New messages and conversations</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.notificationTypes.messages" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Updates</label>
+              <span class="setting-description">App updates and feature announcements</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.notificationTypes.updates" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Reminders</label>
+              <span class="setting-description">Task reminders and deadlines</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.notificationTypes.reminders" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Security Alerts</label>
+              <span class="setting-description">Login attempts and security warnings</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.notificationTypes.security" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy & Security Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'privacy'">
+        <div class="panel-header">
+          <h2>🔒 Privacy & Security</h2>
+          <p>Manage your privacy settings and account security</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Privacy</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Profile Visibility</label>
+              <span class="setting-description">Who can see your profile information</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.profileVisibility" (change)="onSettingChange()">
+              <option value="public">🌍 Public</option>
+              <option value="friends">👥 Friends Only</option>
+              <option value="private">🔒 Private</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Activity Tracking</label>
+              <span class="setting-description">Allow tracking of your activity for analytics</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.activityTracking" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Data Collection</label>
+              <span class="setting-description">Allow collection of usage data for improvements</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.dataCollection" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Security</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Two-Factor Authentication</label>
+              <span class="setting-description">Add an extra layer of security to your account</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.twoFactorAuth" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Auto Logout</label>
+              <span class="setting-description">Automatically log out after period of inactivity</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.autoLogout" (change)="onSettingChange()">
+              <option [value]="15">15 minutes</option>
+              <option [value]="30">30 minutes</option>
+              <option [value]="60">1 hour</option>
+              <option [value]="240">4 hours</option>
+              <option [value]="0">Never</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section danger-zone">
+          <h3>⚠️ Data Management</h3>
+          
+          <div class="danger-actions">
+            <button class="btn btn-outline" (click)="downloadData()">
+              📥 Download My Data
+            </button>
+            <button class="btn btn-outline" (click)="clearCache()">
+              🗑️ Clear Cache
+            </button>
+            <button class="btn btn-danger" (click)="deleteAccount()">
+              ❌ Delete Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Display Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'display'">
+        <div class="panel-header">
+          <h2>🎨 Display Settings</h2>
+          <p>Customize the interface and visual preferences</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Interface</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Compact Mode</label>
+              <span class="setting-description">Use a more compact layout to fit more content</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.compactMode" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Animations</label>
+              <span class="setting-description">Enable smooth animations and transitions</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.animationsEnabled" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Sidebar Collapsed</label>
+              <span class="setting-description">Keep the sidebar collapsed by default</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.sidebarCollapsed" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Font Size</label>
+              <span class="setting-description">Adjust text size for better readability</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.fontSize" (change)="onSettingChange()">
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Accessibility</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>High Contrast</label>
+              <span class="setting-description">Use high contrast colors for better visibility</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.highContrast" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'advanced'">
+        <div class="panel-header">
+          <h2>🔧 Advanced Settings</h2>
+          <p>Advanced options for power users and developers</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Performance</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Performance Mode</label>
+              <span class="setting-description">Optimize for better performance on slower devices</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.performanceMode" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Auto Save</label>
+              <span class="setting-description">Automatically save your work periodically</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.autoSave" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Backup Frequency</label>
+              <span class="setting-description">How often to create automatic backups</span>
+            </div>
+            <select class="setting-control" [(ngModel)]="settings.backupFrequency" (change)="onSettingChange()">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Developer Options</h3>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Developer Mode</label>
+              <span class="setting-description">Enable developer tools and debugging features</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.developerMode" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <label>Beta Features</label>
+              <span class="setting-description">Get early access to experimental features</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="settings.betaFeatures" (change)="onSettingChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Import/Export</h3>
+          
+          <div class="import-export-actions">
+            <button class="btn btn-outline" (click)="exportSettings()">
+              📤 Export Settings
+            </button>
+            <div class="file-input-wrapper">
+              <input #fileInput type="file" accept=".json" (change)="importSettings($event)" style="display: none">
+              <button class="btn btn-outline" (click)="fileInput.click()">
+                📥 Import Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

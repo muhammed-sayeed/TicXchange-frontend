@@ -1,0 +1,178 @@
+<div class="profile-container">
+  <!-- Header Section -->
+  <div class="profile-header">
+    <div class="header-bg"></div>
+    <div class="profile-header-content">
+      <!-- Avatar Section -->
+      <div class="avatar-section">
+        <div class="avatar-wrapper">
+          <img [src]="user.avatar" [alt]="user.name" class="avatar">
+          <div class="avatar-overlay" *ngIf="isEditing" (click)="fileInput.click()">
+            <i class="edit-icon">📷</i>
+          </div>
+          <input #fileInput type="file" accept="image/*" style="display: none" (change)="uploadAvatar($event)">
+        </div>
+        <div class="online-indicator"></div>
+      </div>
+
+      <!-- Basic Info -->
+      <div class="basic-info">
+        <h1 class="name" *ngIf="!isEditing">{{ user.name }}</h1>
+        <input type="text" [(ngModel)]="user.name" class="name-input" *ngIf="isEditing">
+        
+        <p class="title" *ngIf="!isEditing">{{ user.title }}</p>
+        <input type="text" [(ngModel)]="user.title" class="title-input" *ngIf="isEditing">
+        
+        <div class="meta-info">
+          <span class="department">{{ user.department }}</span>
+          <span class="separator">•</span>
+          <span class="location">📍 {{ user.location }}</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-primary" *ngIf="!isEditing" (click)="toggleEdit()">
+          ✏️ Edit Profile
+        </button>
+        <div class="edit-actions" *ngIf="isEditing">
+          <button class="btn btn-success" (click)="saveProfile()">💾 Save</button>
+          <button class="btn btn-secondary" (click)="cancelEdit()">❌ Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Section -->
+  <div class="stats-section">
+    <div class="stat-card">
+      <div class="stat-number">{{ user.stats.projects }}</div>
+      <div class="stat-label">Projects</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ user.stats.tasks }}</div>
+      <div class="stat-label">Tasks Completed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ user.stats.achievements }}</div>
+      <div class="stat-label">Achievements</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="profile-content">
+    <!-- Left Column -->
+    <div class="left-column">
+      <!-- About Section -->
+      <div class="section about-section">
+        <h2 class="section-title">About</h2>
+        <div class="section-content">
+          <p *ngIf="!isEditing" class="bio">{{ user.bio }}</p>
+          <textarea [(ngModel)]="user.bio" class="bio-input" *ngIf="isEditing" rows="4"></textarea>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="section contact-section">
+        <h2 class="section-title">Contact Information</h2>
+        <div class="section-content">
+          <div class="contact-item">
+            <span class="contact-icon">📧</span>
+            <div class="contact-details">
+              <span class="contact-label">Email</span>
+              <span class="contact-value" *ngIf="!isEditing">{{ user.email }}</span>
+              <input type="email" [(ngModel)]="user.email" class="contact-input" *ngIf="isEditing">
+            </div>
+          </div>
+          
+          <div class="contact-item">
+            <span class="contact-icon">📱</span>
+            <div class="contact-details">
+              <span class="contact-label">Phone</span>
+              <span class="contact-value" *ngIf="!isEditing">{{ user.phone }}</span>
+              <input type="tel" [(ngModel)]="user.phone" class="contact-input" *ngIf="isEditing">
+            </div>
+          </div>
+          
+          <div class="contact-item">
+            <span class="contact-icon">📅</span>
+            <div class="contact-details">
+              <span class="contact-label">Joined</span>
+              <span class="contact-value">{{ user.joinDate | date:'MMMM yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Links -->
+      <div class="section social-section">
+        <h2 class="section-title">Social Links</h2>
+        <div class="section-content">
+          <div class="social-links">
+            <a [href]="user.socialLinks.linkedin" target="_blank" class="social-link linkedin" *ngIf="user.socialLinks.linkedin">
+              <span class="social-icon">💼</span>
+              <span>LinkedIn</span>
+            </a>
+            <a [href]="user.socialLinks.twitter" target="_blank" class="social-link twitter" *ngIf="user.socialLinks.twitter">
+              <span class="social-icon">🐦</span>
+              <span>Twitter</span>
+            </a>
+            <a [href]="user.socialLinks.github" target="_blank" class="social-link github" *ngIf="user.socialLinks.github">
+              <span class="social-icon">💻</span>
+              <span>GitHub</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-column">
+      <!-- Skills Section -->
+      <div class="section skills-section">
+        <h2 class="section-title">Skills & Expertise</h2>
+        <div class="section-content">
+          <div class="skills-container">
+            <div class="skill-tag" *ngFor="let skill of user.skills">
+              {{ skill }}
+              <button class="remove-skill" *ngIf="isEditing" (click)="removeSkill(skill)">×</button>
+            </div>
+            <div class="add-skill" *ngIf="isEditing">
+              <input #skillInput type="text" placeholder="Add skill..." class="skill-input" 
+                     (keyup.enter)="addSkill(skillInput.value); skillInput.value = ''">
+              <button (click)="addSkill(skillInput.value); skillInput.value = ''" class="add-skill-btn">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="section activity-section">
+        <h2 class="section-title">Recent Activity</h2>
+        <div class="section-content">
+          <div class="activity-item">
+            <div class="activity-icon">🎉</div>
+            <div class="activity-content">
+              <p class="activity-text">Completed project "E-commerce Platform"</p>
+              <span class="activity-time">2 days ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🏆</div>
+            <div class="activity-content">
+              <p class="activity-text">Earned "Team Player" achievement</p>
+              <span class="activity-time">1 week ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">📝</div>
+            <div class="activity-content">
+              <p class="activity-text">Updated profile information</p>
+              <span class="activity-time">2 weeks ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

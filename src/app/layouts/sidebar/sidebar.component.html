@@ -1,0 +1,38 @@
+<aside class="sidebar" [class.open]="isOpen">
+      <div class="sidebar-content">
+        <div class="sidebar-header" *ngIf="isOpen">
+          <h3>Navigation</h3>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <ul class="nav-list">
+            <li *ngFor="let item of menuItems" class="nav-item">
+              <div class="nav-link" 
+                   [class.active]="isActiveRoute(item.route)"
+                   [class.has-children]="item.children && item.children.length > 0"
+                   (click)="handleItemClick(item)">
+                <span class="nav-icon">{{ item.icon }}</span>
+                <span class="nav-label" *ngIf="isOpen">{{ item.label }}</span>
+                <span class="nav-arrow" 
+                      *ngIf="item.children && item.children.length > 0 && isOpen"
+                      [class.expanded]="item.expanded">
+                  ▼
+                </span>
+              </div>
+              
+              <ul class="nav-submenu" 
+                  *ngIf="item.children && item.children.length > 0 && item.expanded && isOpen">
+                <li *ngFor="let child of item.children" class="nav-subitem">
+                  <div class="nav-sublink" 
+                       [class.active]="isActiveRoute(child.route)"
+                       (click)="navigateTo(child.route)">
+                    <span class="nav-subicon">{{ child.icon }}</span>
+                    <span class="nav-sublabel">{{ child.label }}</span>
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
