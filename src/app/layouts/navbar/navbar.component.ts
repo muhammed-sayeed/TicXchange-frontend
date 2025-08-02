@@ -1,5 +1,7 @@
 import { Component, Output, EventEmitter, Input, OnInit, HostListener, TrackByFunction } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { AuthService } from 'src/app/features/auth/services/auth.service';
 
 interface Notification {
   id: string;
@@ -18,6 +20,7 @@ interface Notification {
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
+  isAthenticate$: Observable<boolean>;
   @Input() isSidebarOpen: boolean | null = false;
   @Output() toggleSidebar = new EventEmitter<void>();
 
@@ -27,7 +30,12 @@ export class NavbarComponent implements OnInit {
   unreadCount = 0;
 trackByNotificationId: TrackByFunction<Notification> | undefined;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authServise: AuthService
+  ) {
+    this.isAthenticate$ = authServise.isAuthenticated$;
+  }
 
   ngOnInit(): void {
     this.loadNotifications();

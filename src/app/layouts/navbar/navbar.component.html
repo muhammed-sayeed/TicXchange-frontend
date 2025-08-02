@@ -107,7 +107,7 @@
       </div>
 
       <div class="user-menu">
-        <button class="navbar-btn user-btn" (click)="navigateToLogin()">
+        <button class="navbar-btn user-btn"*ngIf!="isAthenticate$ | async" (click)="navigateToLogin()">
           <span class="user-avatar">🔐</span>
           <span class="user-name">Login</span>
         </button>

@@ -117,7 +117,6 @@
             type="checkbox" 
             id="agreeTerms" 
             name="agreeTerms"
-            [(ngModel)]="registerData.agreeTerms"
             required>
           <label for="agreeTerms" class="checkbox-label">
             I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
@@ -146,3 +145,64 @@
     </div>
   </div>
 </div>
+
+<!-- opt -->
+ <div *ngIf="showOtpModal" class="otp-modal-overlay">
+    <div class="otp-modal">
+      <div class="otp-header">
+        <h3>Verify Your Email</h3>
+        <button class="close-btn" (click)="closeOtpModal()" [disabled]="isOtpLoading">×</button>
+      </div>
+      
+      <div class="otp-content">
+        <p>We've sent a 6-digit verification code to:</p>
+        <p class="email-display">{{ registerData.email }}</p>
+        
+        <div class="otp-inputs">
+          <div class="otp-inputs">
+  <input 
+    *ngFor="let digit of otpDigits; let i = index"
+    type="text" 
+    [id]="'otp-' + i"
+    maxlength="1" 
+    class="otp-digit"
+    [class.error]="otpError"
+    [(ngModel)]="otpDigits[i]" 
+    (input)="onOtpDigitInput($event, i)"
+    (keydown)="onOtpKeyDown($event, i)"
+    (paste)="onOtpPaste($event)"
+    [disabled]="isOtpLoading"
+    [name]="'otp' + i"> <!-- Unique name for each input -->
+</div>
+        </div>
+
+        <div *ngIf="otpMessage" 
+             class="otp-message" 
+             [class.success]="!otpError" 
+             [class.error]="otpError">
+          {{ otpMessage }}
+        </div>
+
+        <button 
+          class="btn btn-primary verify-btn"
+          (click)="verifyOtp()"
+          [disabled]="otpValue.length !== 6 || isOtpLoading">
+          <span *ngIf="isOtpLoading" class="spinner"></span>
+          {{ isOtpLoading ? 'Verifying...' : 'Verify OTP' }}
+        </button>
+
+        <div class="resend-section">
+          <p *ngIf="resendTimer > 0">
+            Resend OTP in {{ resendTimer }}s
+          </p>
+          <button 
+            *ngIf="resendTimer === 0"
+            class="btn btn-link resend-btn"
+            (click)="resendOtp()"
+            [disabled]="isOtpLoading">
+            Resend OTP
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

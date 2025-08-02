@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 interface LoginData {
   email: string;
@@ -23,7 +24,10 @@ export class LoginComponent implements OnInit {
   loginMessage: string = '';
   isLoginSuccess: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     console.log('Login component initialized');
@@ -34,7 +38,6 @@ export class LoginComponent implements OnInit {
       this.isLoading = true;
       this.loginMessage = '';
 
-      // Simulate API call
       setTimeout(() => {
         this.performLogin();
       }, 1500);
@@ -43,20 +46,33 @@ export class LoginComponent implements OnInit {
 
   private performLogin(): void {
     // Demo login logic
-    if (this.loginData.email === 'demo@example.com' && this.loginData.password === 'demo123') {
-      this.isLoginSuccess = true;
-      this.loginMessage = 'Login successful! Redirecting to dashboard...';
+    // if (this.loginData.email === 'demo@example.com' && this.loginData.password === 'demo123') {
+    //   this.isLoginSuccess = true;
+    //   this.loginMessage = 'Login successful! Redirecting to dashboard...';
       
-      // Simulate successful login and redirect
-      setTimeout(() => {
-        this.router.navigate(['/home']);
-      }, 1000);
-    } else {
-      this.isLoginSuccess = false;
-      this.loginMessage = 'Invalid email or password. Please try again.';
-    }
+    //   // Simulate successful login and redirect
+    //   setTimeout(() => {
+    //     this.router.navigate(['/home']);
+    //   }, 1000);
+    // } else {
+    //   this.isLoginSuccess = false;
+    //   this.loginMessage = 'Invalid email or password. Please try again.';
+    // }
+    this.authService.login(this.loginData).subscribe({
+      next: (response) => {
+         this.isLoading = false;
+         this.loginMessage = response.message;
+         this.isLoginSuccess = true;
+         this.router.navigate(['/home']);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.isLoginSuccess = false;
+        this.loginMessage = error.message || 'Login Failed';
+        console.error('Login error:', error);
+      }
+    })
     
-    this.isLoading = false;
   }
 
   togglePasswordVisibility(): void {

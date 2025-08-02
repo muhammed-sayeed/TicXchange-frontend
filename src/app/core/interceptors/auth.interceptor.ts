@@ -1,18 +1,35 @@
+// src/app/core/interceptors/auth.interceptor.ts
 import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor
-} from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+  
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Skip auth header for certain endpoints
+    const skipAuth = req.url.includes('/auth/login') || 
+                     req.url.includes('/auth/register') || 
+                     req.url.includes('/auth/forgot-password');
+    
+    if (skipAuth) {
+      return next.handle(req);
+    }
 
-  constructor() {}
-
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    return next.handle(request);
+    // Get token from localStorage or sessionStorage
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    
+    if (token) {
+      // Clone the request and add authorization header
+      const authReq = req.clone({
+        setHeaders: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      return next.handle(authReq);
+    }
+    
+    return next.handle(req);
   }
 }
