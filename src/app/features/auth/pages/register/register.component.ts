@@ -43,6 +43,7 @@ export class RegisterComponent implements OnInit {
   // Timer for OTP resend
   resendTimer: number = 0;
   resendInterval: any;
+  cdr: any;
 
   constructor(
     private router: Router,
@@ -86,49 +87,50 @@ export class RegisterComponent implements OnInit {
     }
   }
 
- onOtpDigitInput(event: any, index: number): void {
-  const input = event.target as HTMLInputElement;
-  const value = input.value;
+onOtpDigitInput(event: any, index: number): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
 
-  console.log(`Input at index ${index}: value = ${value}`); // Debug log
+    console.log(`Input at index ${index}: value = ${value}, otpDigits[${index}] = ${this.otpDigits[index]}`);
 
-  // Validate and update otpDigits via ngModel
-  if (value.length === 1 && /^\d$/.test(value)) {
-    // ngModel will update otpDigits[i], no need to set it manually here
-    if (index < 5) {
-      setTimeout(() => {
-        const nextInput = document.getElementById(`otp-${index + 1}`) as HTMLInputElement;
-        if (nextInput) {
-          nextInput.focus();
-          nextInput.select(); // Select content for immediate typing
-        }
-      }, 10); // Delay to ensure DOM updates
-    }
-  } else if (value.length === 0 && index > 0) {
-    // Handle backspace or clearing
-    const prevInput = document.getElementById(`otp-${index - 1}`) as HTMLInputElement;
-    if (prevInput) {
-      prevInput.focus();
-    }
-  } else if (value.length > 1 || !/^\d*$/.test(value)) {
-    input.value = this.otpDigits[index]; // Revert to last valid value
-  }
-
-  this.otpValue = this.otpDigits.join('');
-  this.otpError = false;
-  this.otpMessage = '';
-}
-
-  onOtpKeyDown(event: KeyboardEvent, index: number): void {
-    if (event.key === 'Backspace' && this.otpDigits[index] === '' && index > 0) {
-      // Move to previous input on backspace
+    if (value.length === 1 && /^\d$/.test(value)) {
+      if (index < 5) {
+        // Use requestAnimationFrame for smoother focus transition
+        requestAnimationFrame(() => {
+          const nextInput = document.getElementById(`otp-${index + 1}`) as HTMLInputElement;
+          if (nextInput) {
+            nextInput.value = ''; // Clear before focusing
+            nextInput.focus(); // Focus after clearing
+            nextInput.select(); // Select for immediate typing
+          }
+        });
+      }
+    } else if (value.length === 0 && index > 0) {
+      this.otpDigits[index] = '';
       const prevInput = document.getElementById(`otp-${index - 1}`) as HTMLInputElement;
       if (prevInput) {
         prevInput.focus();
       }
+    } else if (value.length > 1 || !/^\d*$/.test(value)) {
+      input.value = this.otpDigits[index] || '';
     }
+
+    this.otpValue = this.otpDigits.join('');
+    this.cdr.detectChanges(); // Force DOM update
+    this.otpError = false;
+    this.otpMessage = '';
   }
 
+  onOtpKeyDown(event: KeyboardEvent, index: number): void {
+    if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) {
+      this.otpDigits[index] = '';
+      const prevInput = document.getElementById(`otp-${index - 1}`) as HTMLInputElement;
+      if (prevInput) {
+        prevInput.focus();
+        prevInput.value = this.otpDigits[index - 1] || '';
+      }
+    }
+  }
   onOtpPaste(event: ClipboardEvent): void {
     event.preventDefault();
     const pastedData = event.clipboardData?.getData('text') || '';

@@ -148,61 +148,52 @@
 
 <!-- opt -->
  <div *ngIf="showOtpModal" class="otp-modal-overlay">
-    <div class="otp-modal">
-      <div class="otp-header">
-        <h3>Verify Your Email</h3>
-        <button class="close-btn" (click)="closeOtpModal()" [disabled]="isOtpLoading">×</button>
-      </div>
+  <div class="otp-modal">
+    <div class="otp-header">
+      <h3>Verify Your Email</h3>
+      <button class="close-btn" (click)="closeOtpModal()" [disabled]="isOtpLoading">×</button>
+    </div>
+    
+    <div class="otp-content">
+      <p>We've sent a 6-digit verification code to:</p>
+      <p class="email-display">{{ registerData.email }}</p>
       
-      <div class="otp-content">
-        <p>We've sent a 6-digit verification code to:</p>
-        <p class="email-display">{{ registerData.email }}</p>
-        
-        <div class="otp-inputs">
-          <div class="otp-inputs">
-  <input 
-    *ngFor="let digit of otpDigits; let i = index"
-    type="text" 
-    [id]="'otp-' + i"
-    maxlength="1" 
-    class="otp-digit"
-    [class.error]="otpError"
-    [(ngModel)]="otpDigits[i]" 
-    (input)="onOtpDigitInput($event, i)"
-    (keydown)="onOtpKeyDown($event, i)"
-    (paste)="onOtpPaste($event)"
-    [disabled]="isOtpLoading"
-    [name]="'otp' + i"> <!-- Unique name for each input -->
-</div>
-        </div>
+      <div class="otp-inputs">
+        <input type="text" id="otp-0" maxlength="1" class="otp-digit" [class.error]="otpError"
+               [(ngModel)]="otpDigits[0]" (input)="onOtpDigitInput($event, 0)" (keydown)="onOtpKeyDown($event, 0)"
+               (paste)="onOtpPaste($event)" [disabled]="isOtpLoading" name="otp0">
+        <input type="text" id="otp-1" maxlength="1" class="otp-digit" [class.error]="otpError"
+               [(ngModel)]="otpDigits[1]" (input)="onOtpDigitInput($event, 1)" (keydown)="onOtpKeyDown($event, 1)"
+               [disabled]="isOtpLoading" name="otp1">
+        <input type="text" id="otp-2" maxlength="1" class="otp-digit" [class.error]="otpError"
+               [(ngModel)]="otpDigits[2]" (input)="onOtpDigitInput($event, 2)" (keydown)="onOtpKeyDown($event, 2)"
+               [disabled]="isOtpLoading" name="otp2">
+        <input type="text" id="otp-3" maxlength="1" class="otp-digit" [class.error]="otpError"
+               [(ngModel)]="otpDigits[3]" (input)="onOtpDigitInput($event, 3)" (keydown)="onOtpKeyDown($event, 3)"
+               [disabled]="isOtpLoading" name="otp3">
+        <input type="text" id="otp-4" maxlength="1" class="otp-digit" [class.error]="otpError"
+               [(ngModel)]="otpDigits[4]" (input)="onOtpDigitInput($event, 4)" (keydown)="onOtpKeyDown($event, 4)"
+               [disabled]="isOtpLoading" name="otp4">
+        <input type="text" id="otp-5" maxlength="1" class="otp-digit" [class.error]="otpError"
+               [(ngModel)]="otpDigits[5]" (input)="onOtpDigitInput($event, 5)" (keydown)="onOtpKeyDown($event, 5)"
+               [disabled]="isOtpLoading" name="otp5">
+      </div>
 
-        <div *ngIf="otpMessage" 
-             class="otp-message" 
-             [class.success]="!otpError" 
-             [class.error]="otpError">
-          {{ otpMessage }}
-        </div>
+      <div *ngIf="otpMessage" class="otp-message" [class.success]="!otpError" [class.error]="otpError">
+        {{ otpMessage }}
+      </div>
 
-        <button 
-          class="btn btn-primary verify-btn"
-          (click)="verifyOtp()"
-          [disabled]="otpValue.length !== 6 || isOtpLoading">
-          <span *ngIf="isOtpLoading" class="spinner"></span>
-          {{ isOtpLoading ? 'Verifying...' : 'Verify OTP' }}
-        </button>
+      <button class="btn btn-primary verify-btn" (click)="verifyOtp()"
+              [disabled]="otpValue.length !== 6 || isOtpLoading">
+        <span *ngIf="isOtpLoading" class="spinner"></span>
+        {{ isOtpLoading ? 'Verifying...' : 'Verify OTP' }}
+      </button>
 
-        <div class="resend-section">
-          <p *ngIf="resendTimer > 0">
-            Resend OTP in {{ resendTimer }}s
-          </p>
-          <button 
-            *ngIf="resendTimer === 0"
-            class="btn btn-link resend-btn"
-            (click)="resendOtp()"
-            [disabled]="isOtpLoading">
-            Resend OTP
-          </button>
-        </div>
+      <div class="resend-section">
+        <p *ngIf="resendTimer > 0">Resend OTP in {{ resendTimer }}s</p>
+        <button *ngIf="resendTimer === 0" class="btn btn-link resend-btn" (click)="resendOtp()"
+                [disabled]="isOtpLoading">Resend OTP</button>
       </div>
     </div>
   </div>
+</div>

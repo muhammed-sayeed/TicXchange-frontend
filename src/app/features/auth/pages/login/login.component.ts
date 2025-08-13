@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit {
   isLoading: boolean = false;
   loginMessage: string = '';
   isLoginSuccess: boolean = false;
+  isGoogleLoading: boolean = false;
 
   constructor(
     private router: Router,
@@ -45,19 +46,6 @@ export class LoginComponent implements OnInit {
   }
 
   private performLogin(): void {
-    // Demo login logic
-    // if (this.loginData.email === 'demo@example.com' && this.loginData.password === 'demo123') {
-    //   this.isLoginSuccess = true;
-    //   this.loginMessage = 'Login successful! Redirecting to dashboard...';
-      
-    //   // Simulate successful login and redirect
-    //   setTimeout(() => {
-    //     this.router.navigate(['/home']);
-    //   }, 1000);
-    // } else {
-    //   this.isLoginSuccess = false;
-    //   this.loginMessage = 'Invalid email or password. Please try again.';
-    // }
     this.authService.login(this.loginData).subscribe({
       next: (response) => {
          this.isLoading = false;
@@ -96,10 +84,60 @@ export class LoginComponent implements OnInit {
   }
 
   // Social login methods (placeholder)
-  loginWithGoogle(): void {
-    console.log('Google login clicked');
-    this.loginMessage = 'Google login is not implemented yet.';
-    this.isLoginSuccess = false;
+   async loginWithGoogle(): Promise<void> {
+    if (this.isGoogleLoading) return;
+    
+    this.isGoogleLoading = true;
+    this.loginMessage = '';
+    
+    try {
+      console.log('Starting Google login...');
+      const idToken = await this.authService.signIn();
+      
+      console.log('Google ID token received, sending to backend...');
+      
+      // Send the ID token to your backend
+      this.authService.googleLogin(idToken).subscribe({
+        next: (response) => {
+          this.isGoogleLoading = false;
+          this.loginMessage = response.message;
+          this.isLoginSuccess = true;
+          console.log('Google login successful:', response);
+          this.router.navigate(['/home']);
+        },
+        error: (error) => {
+          this.isGoogleLoading = false;
+          this.isLoginSuccess = false;
+          this.loginMessage = error.message || 'Google login failed';
+          console.error('Google login error:', error);
+        }
+      });
+      
+    } catch (error) {
+      this.isGoogleLoading = false;
+      this.isLoginSuccess = false;
+      
+      // Handle different types of cancellation/errors
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        
+        if (errorMessage.includes('cancelled') || 
+            errorMessage.includes('dismissed') || 
+            errorMessage.includes('timed out')) {
+          // User cancelled - don't show error message, just reset state
+          console.log('Google sign-in was cancelled by user');
+          this.loginMessage = '';
+        } else if (errorMessage.includes('blocked')) {
+          this.loginMessage = 'Google sign-in was blocked. Please allow popups and try again.';
+        } else {
+          this.loginMessage = 'Google login failed. Please try again.';
+        }
+      } else {
+        this.loginMessage = 'Google login failed. Please try again.';
+      }
+      
+      console.error('Google sign-in error:', error);
+    }
   }
 
   loginWithGitHub(): void {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/features/auth/services/auth.service';
 
 interface AppSettings {
   // General Settings
@@ -138,10 +139,16 @@ export class SettingsComponent implements OnInit {
   hasUnsavedChanges = false;
   saveMessage = '';
 
-  constructor() { }
+  constructor(
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.loadSettings();
+  }
+
+  Logout(): void{
+    this.authService.logout();
   }
 
   loadSettings(): void {

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { BaseHttpService, ApiResponse } from '../../../core/services/base-http.service';
+import { environment } from 'src/environments/environment';
 
 export interface User {
   id: string;
@@ -13,6 +14,11 @@ export interface User {
   avatar?: string;
 }
 
+declare const google: any;
+export interface GoogleUser {
+  credential: string;
+  select_by: string;
+}
 export interface LoginRequest {
   email: string;
   password: string;
@@ -54,6 +60,8 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
+   private isInitialized = false;
+
   constructor(
     private baseHttp: BaseHttpService,
     private router: Router
@@ -83,7 +91,104 @@ export class AuthService {
         tap(authData => this.handleAuthSuccess(authData))
       );
   }
+googleLogin(idToken: string): Observable<AuthResponse> {
+  return this.baseHttp.post<ApiResponse<AuthResponse>>('/auth/social-login', { idToken }).pipe(
+    map(response => response.data),
+    tap(authData => this.handleAuthSuccess(authData)),
+    catchError(error => {
+      console.error('Google login error:', error);
+      return throwError(() => error);
+    })
+  );
+}
+  async initializeGoogleAuth(): Promise<void> {
+    return new Promise((resolve) => {
+      if (typeof google !== 'undefined' && !this.isInitialized) {
+        google.accounts.id.initialize({
+          client_id: environment.googleClientId,
+          callback: this.handleCredentialResponse.bind(this),
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+        this.isInitialized = true;
+        resolve();
+      } else {
+        // Wait for google script to load
+        const checkGoogle = setInterval(() => {
+          if (typeof google !== 'undefined') {
+            google.accounts.id.initialize({
+              client_id: environment.googleClientId,
+              callback: this.handleCredentialResponse.bind(this),
+              auto_select: false,
+              cancel_on_tap_outside: true
+            });
+            this.isInitialized = true;
+            clearInterval(checkGoogle);
+            resolve();
+          }
+        }, 100);
+      }
+    });
+  }
 
+  private handleCredentialResponse(response: GoogleUser) {
+    // This will be handled by the component
+    console.log('Google credential response received:', response);
+  }
+
+  async signIn(): Promise<string> {
+    if (!this.isInitialized) {
+      await this.initializeGoogleAuth();
+    }
+
+    return new Promise((resolve, reject) => {
+      // Override the callback for this specific sign-in
+      google.accounts.id.initialize({
+        client_id: environment.googleClientId,
+        callback: (response: GoogleUser) => {
+          if (response.credential) {
+            resolve(response.credential);
+          } else {
+            reject('No credential received');
+          }
+        }
+      });
+
+      google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Try alternative sign-in method
+          this.renderSignInButton();
+        }
+      });
+    });
+  }
+
+  private renderSignInButton() {
+    // Create a temporary button for sign-in
+    const buttonDiv = document.createElement('div');
+    document.body.appendChild(buttonDiv);
+    
+    google.accounts.id.renderButton(buttonDiv, {
+      theme: 'outline',
+      size: 'large',
+      type: 'standard'
+    });
+    
+    // Auto-click the button
+    setTimeout(() => {
+      const button = buttonDiv.querySelector('div[role="button"]') as HTMLElement;
+      if (button) {
+        button.click();
+      }
+      document.body.removeChild(buttonDiv);
+    }, 100);
+  }
+
+  signOut(): void {
+    if (this.isInitialized && typeof google !== 'undefined') {
+      google.accounts.id.disableAutoSelect();
+    }
+  }
  signup(userData: RegisterRequest): Observable<SignupResponse> {
   const signupPayload = {
     firstname: userData.firstname,
